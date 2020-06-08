@@ -1,17 +1,20 @@
-const express = require("express");
+const router = require("express").Router();
+const Users = require("./users-model");
 
-const db = require("../data/dbConfig");
+function protected(req, res, next) {
+    if (req.session && req.session.user) {
+      next()
+    } else {
+      res.status(401).json({ message: 'you have no session here' })
+    }
+  }
 
-const router = express.Router();
-
-router.get("/", (req,res) => {
-    db('users')
+router.get("/", protected, (req,res) => {
+    Users.findUser()
     .then(users => {
         res.json(users);
     })
-    .catch(err => {
-        res.status(500).json({ message: "Failed to GET users"}, err);
-    });
+    .catch(err => res.send(err));
 });
 
 module.exports = router;
